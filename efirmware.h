@@ -8,7 +8,7 @@ ff 55 len idx action device EF_POS_0 slot data a
 0  1  2   3   4      5      6         7    8
 */
 
-#define EF_POS_0                     6  //- position of 1st user data inside buffer
+#define EF_POS_0                   6  //- position of 1st user data inside buffer
 
 #define EF_DIGITAL                30
 #define EF_ANALOG                 31
