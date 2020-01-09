@@ -10,6 +10,14 @@ ff 55 len idx action device EF_POS_0 slot data a
 
 #define EF_POS_0                   6  //- position of 1st user data inside buffer
 
+
+#define VERSION                   0
+#define GET                       1
+#define RUN                       2
+#define RESET                     4
+#define START                     5
+
+
 #define EF_DIGITAL                30
 #define EF_ANALOG                 31
 #define EF_PWM                    32
@@ -18,6 +26,14 @@ ff 55 len idx action device EF_POS_0 slot data a
 #define EF_BUTTON_INNER           35
 #define EF_ULTRASONIC_ARDUINO     36
 #define EF_PULSEIN                37
+#define EF_TIMER                  50
+
+#define EF_BUTTON                200
+#define EF_BUTTON_UP             201
+#define EF_BUTTON_DN             202
+
+#define EF_ANALOG_PERC           206
+
 
 void writeHead();
 void writeEnd();

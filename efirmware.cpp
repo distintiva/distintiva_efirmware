@@ -1,7 +1,39 @@
 #include "arduino.h"
-#include "efirmware.h"
 
-String mVersion = "06.01.107";
+//-NOTE:  If compiling other architectures comment these lines
+#define EF_USE_ARDUINO_TONE
+#define EF_USE_SERVO
+
+
+#ifdef EF_USE_SERVO
+#include <Servo.h>
+#endif
+
+#include "efirmware.h"
+#include "eblock.h"
+
+String mVersion = "00.00.000";
+
+
+
+#ifdef EF_USE_SERVO //-------------------------
+Servo servos[8]; 
+
+int servo_pins[8]={0,0,0,0,0,0,0,0};
+
+int searchServoPin(int pin){
+    for(int i=0;i<8;i++){
+      if(servo_pins[i] == pin){
+        return i;
+      }
+      if(servo_pins[i]==0){
+        servo_pins[i] = pin;
+        return i;
+      }
+    }
+    return 0;
+}
+#endif //-----------------------------------
 
 void callOK();
 
@@ -70,21 +102,19 @@ void readSerial(){
   }
 }
 
-#define GET 1
-#define RUN 2
-#define RESET 4
-#define START 5
-#define VERSION                0
-#define EF_TIMER                  50
+
 
 void parseData(){
   isStart = false;
-  int idx = ef_read_byte(3);
+  int idx = ef_read_byte(3);  //- NEXTID (not used)
   command_idx = (uint8_t)idx;
   int action = ef_read_byte(4);
   int device = ef_read_byte(5);
   
-   
+  //-if t nextid,  set it to device (to notify return the action )
+   if(idx==0)idx=device;
+  
+
   switch(action){
     case GET:{
 
@@ -105,9 +135,12 @@ void parseData(){
                 ef_send_float(digitalRead(pin));
               }
               break;
-                case  EF_ANALOG:{
-                pinMode(pin,INPUT);
-                ef_send_float(analogRead(pin));
+              case  EF_ANALOG:{
+                 ef_send_short( e_get_analog(pin) );
+              }
+              break;
+              case  EF_ANALOG_PERC:{
+                 ef_send_short( e_get_analog_perc(pin) );
               }
               break;
             }
@@ -132,17 +165,54 @@ void parseData(){
            switch(device){
                   
               case EF_DIGITAL:{
-                pinMode(pin,OUTPUT);
-                int v = ef_read_byte(7);
-                digitalWrite(pin,v);
+                e_pin_set(pin, ef_read_byte(EF_POS_0+1)); //0,1 or 2(toggle)
+
               }
               break;
               case EF_PWM:{
-                pinMode(pin,OUTPUT);
-                int v = ef_read_byte(7);
-                analogWrite(pin,v);
+                e_pwm(ef_read_byte(EF_POS_0), ef_read_byte(EF_POS_0+1) );
               }
               break;
+
+              break;
+              case EF_TONE:{
+              #ifdef EF_USE_ARDUINO_TONE  
+                int hz = ef_read_short(EF_POS_0);
+                int tone_time = ef_read_short(EF_POS_0 + 2);
+                if(hz>0){
+                    tone(10, hz,tone_time);
+                }else{
+                    noTone(10); 
+                }
+              
+              #endif
+              }
+              break;
+             
+    
+              //----
+              #ifdef EF_USE_SERVO
+              case  EF_SERVO_PIN:{
+
+                 int v = ef_read_byte(EF_POS_0+1);
+                 uint8_t pin = ef_read_byte(EF_POS_0) ;
+                 Servo sv = servos[searchServoPin(  pin )]; 
+                 if(v >= 0 && v <= 180)
+                 {
+                   if(!sv.attached())
+                   {
+                     sv.attach(pin);
+                   }
+                   sv.write(v);
+                 }
+               
+               }
+             break;
+              #endif //< USE_SERVO
+
+              //----  
+
+
               
             }
 
