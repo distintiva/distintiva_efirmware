@@ -35,6 +35,13 @@ ff 55 len idx action device EF_POS_0 slot data a
 #define EF_ANALOG_PERC           206
 
 
+#if defined(ESP32)
+void noTone();
+void noTone(int pin);
+void tone(int frq) ;
+void tone(int pin, int frq, int duration);
+#endif
+
 void writeHead();
 void writeEnd();
 void writeBuffer(int idx,unsigned char c);

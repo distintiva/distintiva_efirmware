@@ -12,6 +12,29 @@
 #include "efirmware.h"
 #include "eblock.h"
 
+
+#if defined(ESP32)
+#define analogWrite ledcWrite
+
+void noTone(){
+  ledcWrite(0, 0); // channel, volume
+}
+
+void noTone(int pin){
+  noTone();
+}
+
+void tone(int frq) {
+  ledcWriteTone(0, frq); // channel, freq
+  ledcWrite(0, 255); // channel, volume
+}
+
+void tone(int pin, int frq, int duration){
+  tone(frq);
+}
+#endif
+
+
 String mVersion = "00.00.000";
 
 
